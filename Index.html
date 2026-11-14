@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Players India - Free Fire Tournament</title>
+    <meta name="description" content="Join Free Fire India Tournaments, Clash Squad & Battle Royale, win cash prizes, and manage your esports profile.">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Hide Netlify Branding */
+        [data-netlify-identity-menu], 
+        .netlify-badge, 
+        #netlify-badge, 
+        iframe[src*="netlify"],
+        div[style*="position: fixed"][style*="bottom: 0"][style*="z-index: 999999"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0b0f19; color: #ffffff; display: flex; justify-content: center; min-height: 100vh; }
+        
+        .app-container {
+            width: 100%;
+            max-width: 430px;
+            background-color: #121826;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            padding-bottom: 75px;
+        }
+
+        /* Top Header Bar */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background-color: #121826;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #1a2333;
+        }
+        .user-logo-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #252d3d;
+            border: 2px solid #ff9800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .user-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-actions { display: flex; align-items: center; gap: 10px; }
+        .btn-add-money {
+            background: linear-gradient(90deg, #ff4136, #e53935);
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .coin-pill {
+            background-color: #0b0f19;
+            border: 1px solid #2d3748;
+            padding: 6px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #fff;
+            cursor: pointer;
+        }
+        .coin-icon {
+            width: 18px;
+            height: 18px;
+            background: #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        /* Screens */
+        .screen { display: none; padding: 14px 16px; }
+
+        /* Announcement Notice */
+        .announcement-card {
+            background: #ffffff;
+            color: #121826;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .announcement-card .icon-box {
+            background-color: #e53935;
+            color: white;
+            padding: 14px 16px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .announcement-card .text-content {
+            padding: 10px 14px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* APK Download Card */
+        .apk-download-card {
+            background: linear-gradient(135deg, #00c853, #1b5e20);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #ffffff;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(0, 200, 83, 0.35);
+            margin-bottom: 14px;
+            border: 1px solid #69f0ae;
+            position: relative;
+            overflow: hidden;
+        }
+        .apk-download-card .apk-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .apk-download-card .apk-icon-circle {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        .apk-download-card .apk-badge {
+            display: inline-block;
+            background: #ffffff;
+            color: #1b5e20;
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
+        .apk-btn-tag {
+            background: #ffffff;
+            color: #1b5e20;
+            font-weight: 800;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Support Button Card */
+        .support-banner-card {
+            background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+            margin-bottom: 16px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(253, 29, 29, 0.3);
+        }
+        .support-banner-card b { font-size: 0.95rem; }
+        .support-banner-card span { font-size: 0.75rem; opacity: 0.9; display: block; margin-top: 2px; }
+
+        /* Filter Tabs for Matches */
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .filter-btn {
+            background: #1a2234;
+            color: #8c9ba5;
+            border: 1px solid #28334b;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .filter-btn.active {
+            background: #ff9800;
+            color: #000;
+            border-color: #ff9800;
+        }
+        .filter-btn.cs-tab.active {
+            background: linear-gradient(90deg, #00bcd4, #2979ff);
+            color: #fff;
+            border-color: #00bcd4;
+        }
+
+        /* Motivation Tag */
+        .motivation-line {
+            background: rgba(255, 152, 0, 0.12);
+            border-left: 3px solid #ff9800;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #ffb74d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Tournament Card Item */
+        .tourney-card {
+            background: #1a2234;
+            border-radius: 14px;
+            border: 1px solid #28334b;
+            margin-bottom: 18px;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .tourney-banner {
+            width: 100%;
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .tourney-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ff9800;
+            color: #000;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .tourney-badge.cs-badge {
+            background: linear-gradient(90deg, #00e5ff, #2979ff);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 229, 255, 0.4);
+        }
+        .tourney-body { padding: 14px; }
+        .tourney-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .tourney-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: #8c9ba5;
+            margin-bottom: 10px;
+        }
+        .tourney-meta span b { color: #ffeb3b; }
+
+        .timing-alert-box {
+            background: rgba(229, 57, 53, 0.15);
+            border: 1px dashed #ef5350;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            color: #ff8a80;
+            text-align: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        /* Winner Card */
+        .winner-card {
+            background: linear-gradient(145deg, #1b2438, #101624);
+            border: 1px solid #ffb300;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 6px 18px rgba(255,152,0,0.15);
+        }
+        .winner-poster-img {
+            width: 100%;
+            height: 170px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 12px;
+            border: 1px solid #364461;
+        }
+
+        /* Form Components */
+        .form-box {
+            background-color: #1a2234;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #28334b;
+            margin-bottom: 16px;
+        }
+        .form-box h2 {
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+            color: #ff9800;
+            border-bottom: 1px solid #28334b;
+            padding-bottom: 8px;
+            text-transform: uppercase;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            background-color: #0e1422;
+            border: 1px solid #2d3850;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        input:focus { outline: none; border-color: #ff9800; }
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff9800;
+            color: #000;
+            font-weight: 800;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        .back-btn {
+            background-color: #2b364e;
+            color: white;
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .switch-btn {
+            background: transparent;
+            color: #03a9f4;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 12px;
+            width: 100%;
+            font-size: 0.9em;
+        }
+
+        /* Profile Styles */
+        .profile-avatar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .profile-avatar {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            border: 3px solid #ff9800;
+            overflow: hidden;
+            background: #252d3d;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .upload-avatar-btn {
+            font-size: 0.78rem;
+            color: #03a9f4;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 14px 0;
+        }
+        .stat-card {
+            background: #0d1424;
+            border: 1px solid #25334d;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-card span { font-size: 0.75rem; color: #8c9ba5; display: block; margin-bottom: 4px; }
+        .stat-card b { font-size: 1.2rem; }
+
+        .player-list { 
+            background:#0e1422; 
+            padding:10px; 
+            border-radius:8px; 
+            max-height:240px; 
+            overflow-y:auto; 
+            font-size:0.85em; 
+            border:1px solid #28334b; 
+            margin-bottom:12px; 
+        }
+        .player-item { 
+            border-bottom:1px dashed #28334b; 
+            padding:10px 0; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .player-item:last-child { border-bottom: none; }
+        
+        .tx-green { color: #00e676; font-weight: 800; font-size: 0.95rem; }
+        .tx-red { color: #ff5252; font-weight: 800; font-size: 0.95rem; }
+
+        .upi-box {
+            background-color: #0d1424;
+            border: 1px dashed #4caf50;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+        .upi-box span { color: #ff9800; font-weight: bold; font-size: 1.1em; display: block; margin-top: 4px; }
+        
+        .prize-box {
+            background: #0d1424;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border: 1px dashed #ffeb3b;
+            font-size: 0.85rem;
+        }
+        .prize-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 0;
+            border-bottom: 1px dashed #202b3f;
+        }
+        .prize-item-row:last-child { border-bottom: none; }
+
+        .room-details {
+            background-color: #1b5e20;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .approve-btn { background-color: #4caf50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 6px; }
+        .reject-btn { background-color: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        /* Bottom Fixed Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            background: #0d1320;
+            border-top: 1px solid #1f2a3f;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 100;
+        }
+        .nav-item {
+            color: #8c9ba5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.68rem;
+            cursor: pointer;
+            gap: 4px;
+            font-weight: 600;
+            border: none;
+            background: none;
+        }
+        .nav-item.active { color: #ff9800; }
+        .nav-item i { font-size: 1.25rem; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- TOP HEADER -->
+    <header class="top-nav">
+        <div class="user-logo-wrap" onclick="handleProfileClick()">
+            <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Avatar">
+        </div>
+        
+        <div class="nav-actions">
+            <button class="btn-add-money" onclick="openScreen('walletScreen')">+ ADD MONEY</button>
+            <div class="coin-pill" onclick="openScreen('walletScreen')">
+                <div class="coin-icon">₹</div>
+                <span id="displayBalance">0</span> INR
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. SIGNUP SCREEN -->
+    <div id="signupScreen" class="screen">
+        <div class="form-box">
+            <h2>Create New Account</h2>
+            <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px;">Pehli baar visit karne par registration karein:</p>
+            <input type="text" id="signupName" placeholder="Enter Your In-Game Name" required>
+            <input type="tel" id="signupMobile" placeholder="Enter Mobile Number" maxlength="10" required>
+            <input type="password" id="signupPass" placeholder="Create Strong Password" required>
+            <button type="button" class="action-btn" onclick="signupUser()">Register & Play</button>
+            <button type="button" class="switch-btn" onclick="openScreen('loginScreen')">Already have an account? Login</button>
+        </div>
+    </div>
+
+    <!-- 2. LOGIN SCREEN -->
+    <div id="loginScreen" class="screen">
+        <div class="form-box">
+            <h2>Login to Lobby</h2>
+            <input type="tel" id="loginMobile" placeholder="Mobile Number" maxlength="10" required>
+            <input type="password" id="loginPass" placeholder="Password" required>
+            <button type="button" class="action-btn" onclick="loginUser()">Login</button>
+            <button type="button" class="switch-btn" onclick="openScreen('signupScreen')">Don't have an account? Register Now</button>
+        </div>
+    </div>
+
+    <!-- 3. HOME SCREEN -->
+    <div id="homeScreen" class="screen">
+        <div class="announcement-card">
+            <div class="icon-box"><i class="fa-solid fa-bullhorn"></i></div>
+            <div class="text-content" id="welcomeMsg">Welcome to Players India</div>
+        </div>
+
+        <!-- Direct APK Download Card -->
+        <a href="https://drive.google.com/uc?export=download&id=1yexscAxlrsmlzuNkpjtQHbX3fCdhPzgK" download class="apk-download-card">
+            <div class="apk-info">
+                <div class="apk-icon-circle">
+                    <i class="fa-brands fa-android"></i>
+                </div>
+                <div>
+                    <b style="font-size: 0.95rem; display:block;">Download Official App</b>
+                    <span style="font-size: 0.72rem; opacity: 0.95;">Fast, Smooth & 100% Virus Free</span>
+                    <div><span class="apk-badge"><i class="fa-solid fa-shield-halved"></i> 100% Safe & Verified</span></div>
+                </div>
+            </div>
+            <div class="apk-btn-tag">
+                <i class="fa-solid fa-download"></i> Get APK
+            </div>
+        </a>
+
+        <!-- Help Support via Instagram -->
+        <a href="https://www.instagram.com/offical_free_fire_turnaent?mdxt=MXhlMTVlanprZm5sbQ==" target="_blank" class="support-banner-card">
+            <div>
+                <b><i class="fa-brands fa-instagram"></i> Official Help & Support</b>
+                <span>Follow and DM for Instant Tournament Support</span>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </a>
+
+        <!-- Quick Mode Shortcut Banner -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:14px;">
+            <div onclick="openMatchesWithFilter('BR')" style="background: linear-gradient(135deg, #ff6f00, #e65100); padding:12px; border-radius:10px; cursor:pointer; text-align:center;">
+                <i class="fa-solid fa-skull-crossbones" style="font-size:1.3rem; margin-bottom:4px;"></i>
+                <div style="font-weight:800; font-size:0.82rem;">BATTLE ROYALE</div>
+                <div style="font-size:0.68rem; opacity:0.9;">Solo / Duo / Squad</div>
+            </div>
+            <div onclick="openMatchesWithFilter('CS')" style="background: linear-gradient(135deg, #0091ea, #1565c0); padding:12px; border-radius:10px; cursor:pointer; text-align:center;">
+                <i class="fa-solid fa-shield-halved" style="font-size:1.3rem; margin-bottom:4px;"></i>
+                <div style="font-weight:800; font-size:0.82rem;">CLASH SQUAD</div>
+                <div style="font-size:0.68rem; opacity:0.9;">4v4 / 1v1 Custom</div>
+            </div>
+        </div>
+
+        <div style="font-size: 0.8rem; color: #8c9ba5; font-weight: 800; text-transform: uppercase; margin-bottom: 10px;">
+            🔥 Live Featured Contests
+        </div>
+        <div id="homeMatchesPreview"></div>
+
+        <div id="adminCardShortcut" style="display:none; margin-top: 14px;">
+            <button class="action-btn" style="background:#d32f2f; color:#fff;" onclick="openScreen('adminDashboardScreen')">👑 Open Admin Controls</button>
+        </div>
+    </div>
+
+    <!-- 4. PROFILE / ACCOUNT SCREEN -->
+    <div id="profileScreen" class="screen">
+        <div class="form-box">
+            <h2>My Account</h2>
+            
+            <div class="profile-avatar-container">
+                <div class="profile-avatar">
+                    <img id="profAvatarImg" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile Photo">
+                </div>
+                <label for="avatarFileInput" class="upload-avatar-btn">
+                    <i class="fa-solid fa-camera"></i> Change Photo (No MB Limit)
+                </label>
+                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+            </div>
+
+            <p style="text-align:center; font-size:1.15rem; font-weight:800; color:#fff;" id="profName">-</p>
+            <p style="text-align:center; font-size:0.8rem; color:#8c9ba5; margin-bottom:12px;" id="profMobile">-</p>
+
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <span>Wallet Balance</span>
+                    <b style="color:#00e676;">₹<span id="profBalance">0</span></b>
+                </div>
+                <div class="stat-card">
+                    <span>Matches Joined</span>
+                    <b style="color:#03a9f4;"><span id="profMatchesPlayed">0</span></b>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="color:#ff9800; font-size:0.95rem;"><i class="fa-solid fa-receipt"></i> Money History</h3>
+                <span style="font-size:0.75rem; color:#aaa; cursor:pointer;" onclick="renderUserTxList()">Refresh</span>
+            </div>
+            <div id="userTxList" class="player-list"></div>
+
+            <div style="margin-top:16px; border-top:1px solid #28334b; padding-top:12px;">
+                <h3 style="color:#ce93d8; font-size:0.95rem; margin-bottom:8px;">
+                    <i class="fa-solid fa-key"></i> Change Password
+                </h3>
+                <input type="password" id="userNewPassword" placeholder="Enter New Password">
+                <button type="button" class="action-btn" style="background:#8e24aa; color:#fff;" onclick="changeUserPassword()">
+                    Update Password
+                </button>
+            </div>
+
+            <button class="action-btn" style="background-color:#d32f2f; color:white; margin-top:16px;" onclick="confirmLogout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout Account
+            </button>
+            <button class="back-btn" onclick="openScreen('homeScreen')">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- 5. MATCHES SCREEN (MULTIPLE TOURNAMENTS + CLASH SQUAD FILTER) -->
+    <div id="matchesScreen" class="screen">
+        <h2 style="color:#ff9800; font-size:1.25rem; margin-bottom:10px; text-transform:uppercase;">
+            <i class="fa-solid fa-gamepad"></i> Tournaments Lobby
+        </h2>
+
+        <!-- Mode Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-btn active" id="tab_ALL" onclick="setMatchFilter('ALL')">All Matches</button>
+            <button class="filter-btn cs-tab" id="tab_CS" onclick="setMatchFilter('CS')">⚔️ Clash Squad</button>
+            <button class="filter-btn" id="tab_BR" onclick="setMatchFilter('BR')">🪂 Battle Royale</button>
+        </div>
+
+        <div id="tournamentListContainer"></div>
+        <button class="back-btn" onclick="openScreen('homeScreen')">Back to Home</button>
+    </div>
+
+    <!-- 6. WINNERS SCREEN -->
+    <div id="winnersScreen" class="screen">
+        <h2 style="color:#ffb300; font-size:1.25rem; margin-bottom:14px; text-transform:uppercase;">
+            🏆 Winners Hall of Fame
+        </h2>
+        <div id="winnersListContainer"></div>
+        <button class="back-btn" onclick="openScreen('homeScreen')">Back to Home</button>
+    </div>
+
+    <!-- 7. WALLET SCREEN -->
+    <div id="walletScreen" class="screen">
+        <div class="form-box">
+            <h2>Wallet & Payments</h2>
+            <div style="background:#0d1424; padding:12px; border-radius:8px; text-align:center; margin-bottom:12px;">
+                Wallet Balance: <b style="color:#ff9800; font-size:1.2rem;">₹<span id="wallBalance">0</span></b>
+            </div>
+
+            <div class="upi-box">
+                Pay directly to UPI:
+                <span>xpllusahuanjl@fam</span>
+            </div>
+            <input type="number" id="depAmount" placeholder="Amount Paid (₹)" min="1">
+            <input type="text" id="paymentUrl" placeholder="Payment Screenshot URL / UTR Number">
+            <button type="button" class="action-btn" onclick="confirmDeposit()">Submit Deposit</button>
+
+            <h3 style="margin-top:20px; font-size:1rem; color:#ef5350;">Withdraw Money</h3>
+            <p style="font-size:0.75rem; color:#ffb74d; margin-bottom:4px;">⚠️ Minimum Withdrawal: ₹200</p>
+            <input type="text" id="withUpi" placeholder="Enter Your UPI ID (e.g. name@upi)">
+            <input type="number" id="withAmount" placeholder="Amount (Minimum ₹200)" min="200">
+            <button type="button" class="action-btn" style="background:#d32f2f; color:#fff;" onclick="confirmWithdraw()">Request Withdrawal</button>
+
+            <h3 style="margin-top:20px; font-size:1rem; color:#ff9800;">My Transactions</h3>
+            <div id="walletTxList" class="player-list" style="margin-top:8px;"></div>
+
+            <button class="back-btn" onclick="openScreen('homeScreen')">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- 8. ADMIN DASHBOARD -->
+    <div id="adminDashboardScreen" class="screen">
+        <div class="form-box" style="border-color: #d32f2f;">
+            <h2 style="color: #ef5350; text-align:center;">Commander Dashboard</h2>
+            <div style="background:#0b0f19; padding:10px; border-radius:8px; text-align:center; margin-bottom:14px; border:1px solid #ff9800;">
+                Admin Vault Balance: <b style="color:#00e676; font-size:1.2rem;">₹<span id="adminVaultBal">0</span></b>
+            </div>
+            
+            <button class="action-btn" style="background:#e91e63; color:#fff; margin-bottom:10px;" onclick="openScreen('adminSendMoneyScreen')">🎁 Gift / Send Money to User</button>
+            <button class="action-btn" style="background:#f57c00; margin-bottom:10px;" onclick="openScreen('adminCreateMatchScreen')">➕ Create New Tournament (BR / CS)</button>
+            <button class="action-btn" style="background:#00bcd4; margin-bottom:10px;" onclick="openScreen('adminManageMatchesScreen')">🎮 Manage / Declare Winners</button>
+            <button class="action-btn" style="background:#4caf50; margin-bottom:10px;" onclick="openAdminPayments()">💸 Manage Payments</button>
+            <button class="action-btn" style="background:#1976d2; margin-bottom:10px;" onclick="openAdminPlayers()">👥 All Users Database</button>
+            <button class="action-btn" style="background:#8e24aa; margin-bottom:10px;" onclick="openScreen('adminPasswordScreen')">🔑 Change Admin Password</button>
+            <button class="back-btn" onclick="openScreen('homeScreen')">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- ADMIN: CREATE TOURNAMENT -->
+    <div id="adminCreateMatchScreen" class="screen">
+        <div class="form-box">
+            <h2>Create New Tournament</h2>
+            <input type="text" id="adminMotivation" placeholder="Hinglish Motivation (e.g. Aaj ka Booyah hamara hai!)">
+            <input type="text" id="adminMatchTitle" placeholder="Tournament Name (e.g. CS 4v4 KnockOut)">
+            <input type="date" id="adminDate">
+            <input type="time" id="adminTime">
+            
+            <label style="font-size:0.8rem; color:#00e5ff; display:block; margin-top:4px;">Select Match Mode:</label>
+            <select id="adminType">
+                <option value="CLASH SQUAD (4v4)">⚔️ CLASH SQUAD (4v4)</option>
+                <option value="CLASH SQUAD (1v1)">⚔️ CLASH SQUAD (1v1)</option>
+                <option value="SOLO BATTLE">🪂 SOLO BATTLE (BR)</option>
+                <option value="DUO CLASH">🪂 DUO CLASH (BR)</option>
+                <option value="SQUAD WARS">🪂 SQUAD WARS (BR)</option>
+            </select>
+            
+            <input type="number" id="adminFee" placeholder="Entry Fee (₹)" min="0">
+            
+            <label style="font-size:0.8rem; color:#ffeb3b; display:block; margin-top:6px;">
+                📸 Upload Custom Poster (No MB Limit):
+            </label>
+            <input type="file" id="adminBannerFile" accept="image/*" onchange="previewAndProcessBanner(event)">
+            <input type="hidden" id="adminBannerBase64">
+            <div id="bannerPreviewBox" style="display:none; margin: 8px 0; text-align:center;">
+                <img id="bannerPreviewImg" src="" style="width:100%; height:130px; object-fit:cover; border-radius:8px; border:1px solid #ff9800;">
+            </div>
+
+            <p style="font-size:0.8rem; color:#ffeb3b; margin-top:8px;">
+                💡 Prize pool amounts in ₹ (Clash Squad ke liye sirf 1st Prize bhi bhar sakte hain):
+            </p>
+            <input type="number" id="adminPrize1" placeholder="1st Prize / Winner Prize in ₹" min="0">
+            <input type="number" id="adminPrize2" placeholder="2nd Prize in ₹ (Optional)" min="0">
+            <input type="number" id="adminPrize3" placeholder="3rd Prize in ₹ (Optional)" min="0">
+            <input type="number" id="adminPrize4" placeholder="4th Prize in ₹ (Optional)" min="0">
+            <input type="number" id="adminPrize5" placeholder="5th Prize in ₹ (Optional)" min="0">
+            
+            <input type="text" id="adminRoom" placeholder="Room ID (Optional)">
+            <input type="text" id="adminPass" placeholder="Room Password (Optional)">
+            
+            <button type="button" class="action-btn" onclick="publishNewTournament()">Publish Tournament</button>
+            <button class="back-btn" onclick="openScreen('adminDashboardScreen')">Back</button>
+        </div>
+    </div>
+
+    <!-- ADMIN: MANAGE WINNERS & DECLARATION -->
+    <div id="adminManageMatchesScreen" class="screen">
+        <div class="form-box">
+            <h2>Active Matches & Winners</h2>
+            <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px;">Winners choose karein. Payout automatically unke wallet me credit ho jayega.</p>
+            <div id="adminMatchesList"></div>
+            <button class="back-btn" onclick="openScreen('adminDashboardScreen')">Back</button>
+        </div>
+    </div>
+
+    <!-- ADMIN: SEND / GIFT MONEY -->
+    <div id="adminSendMoneyScreen" class="screen">
+        <div class="form-box" style="border-color:#e91e63;">
+            <h2 style="color:#f48fb1;">🎁 Send Gift / Balance</h2>
+            <select id="giftUserSelect">
+                <option value="">-- Choose User by Mobile / Name --</option>
+            </select>
+            <input type="number" id="giftAmount" placeholder="Amount to Send (₹)" min="1">
+            <input type="text" id="giftRemark" placeholder="Remark / Reason">
+            <button type="button" class="action-btn" style="background:#e91e63; color:#fff;" onclick="sendMoneyToUser()">Send Money Now</button>
+            <button class="back-btn" onclick="openScreen('adminDashboardScreen')">Back</button>
+        </div>
+    </div>
+
+    <!-- ADMIN: PAYMENTS -->
+    <div id="adminPaymentsScreen" class="screen">
+        <div class="form-box">
+            <h2>Manage Payments</h2>
+            <div style="color:#4caf50; font-weight:bold; margin:6px 0;">Pending Deposits</div>
+            <div id="adminDepList" class="player-list"></div>
+            <div style="color:#ef5350; font-weight:bold; margin:6px 0;">Pending Withdrawals</div>
+            <div id="adminWithList" class="player-list"></div>
+            <button class="back-btn" onclick="openScreen('adminDashboardScreen')">Back</button>
+        </div>
+    </div>
+
+    <!-- ADMIN: PLAYERS -->
+    <div id="adminPlayersScreen" class="screen">
+        <div class="form-box">
+            <h2>Users Database</h2>
+            <p>Total Players: <b id="adminTotalPlayers" style="color:#4caf50;">0</b></p>
+            <div id="adminPlayersList" class="player-list" style="margin-top:10px;"></div>
+            <button class="back-btn" onclick="openScreen('adminDashboardScreen')">Back</button>
+        </div>
+    </div>
+
+    <!-- ADMIN: PASSWORD -->
+    <div id="adminPasswordScreen" class="screen">
+        <div class="form-box">
+            <h2>Change Admin Password</h2>
+            <input type="password" id="newAdminPass" placeholder="Enter new password">
+            <button type="button" class="action-btn" onclick="changeAdminPass()">Update Password</button>
+            <button class="back-btn" onclick="openScreen('adminDashboardScreen')">Back</button>
+        </div>
+    </div>
+
+    <!-- BOTTOM APP NAV BAR -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="openScreen('homeScreen')">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="openScreen('matchesScreen')">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>Matches</span>
+        </button>
+        <button class="nav-item" onclick="openScreen('winnersScreen')">
+            <i class="fa-solid fa-trophy"></i>
+            <span>Winners</span>
+        </button>
+        <button class="nav-item" onclick="openScreen('walletScreen')">
+            <i class="fa-solid fa-wallet"></i>
+            <span>Wallet</span>
+        </button>
+        <button class="nav-item" onclick="handleProfileClick()">
+            <i class="fa-solid fa-circle-user"></i>
+            <span>Account</span>
+        </button>
+    </nav>
+
+</div>
+
+<script>
+    // XSS Sanitizer
+    function sanitize(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function(m) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m];
+        });
+    }
+
+    let currentMatchFilter = 'ALL';
+
+    function setMatchFilter(filterType) {
+        currentMatchFilter = filterType;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        let activeTab = document.getElementById('tab_' + filterType);
+        if(activeTab) activeTab.classList.add('active');
+        renderTournamentsList();
+    }
+
+    function openMatchesWithFilter(filterType) {
+        openScreen('matchesScreen');
+        setMatchFilter(filterType);
+    }
+
+    function openScreen(screenId) {
+        let screens = document.getElementsByClassName('screen');
+        for(let i = 0; i < screens.length; i++) { screens[i].style.display = 'none'; }
+        
+        let target = document.getElementById(screenId);
+        if(target) target.style.display = 'block';
+        window.scrollTo(0,0);
+
+        if(screenId === 'walletScreen' || screenId === 'profileScreen') renderUserTxList();
+        if(screenId === 'matchesScreen') renderTournamentsList();
+        if(screenId === 'winnersScreen') renderWinnersArchive();
+        if(screenId === 'adminManageMatchesScreen') renderAdminMatchesList();
+    }
+
+    function handleProfileClick() {
+        let currentUser = localStorage.getItem('loggedInUser');
+        let isAdmin = localStorage.getItem('isAdminStatus');
+        if(isAdmin === 'true') {
+            openScreen('adminDashboardScreen');
+        } else if(currentUser) {
+            updateProfileScreenData();
+            openScreen('profileScreen');
+        } else {
+            openScreen('signupScreen');
+        }
+    }
+
+    // ================= FIREBASE CONFIG =================
+    const firebaseConfig = {
+        apiKey: "AIzaSyClCCc4PaRJuE-pSfSpB087ItHlV2iQ1tA",
+        authDomain: "free-fire-india-turnamen-c1087.firebaseapp.com",
+        databaseURL: "https://free-fire-india-turnamen-c1087-default-rtdb.firebaseio.com",
+        projectId: "free-fire-india-turnamen-c1087",
+        storageBucket: "free-fire-india-turnamen-c1087.firebasestorage.app",
+        messagingSenderId: "606112122312",
+        appId: "1:606112122312:web:5eada9277e632d34ec6cfd"
+    };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    const database = firebase.database();
+    // ===================================================
+
+    let liveUsersDb = {};
+    let liveTxs = {};
+    let liveTournaments = {};
+    let liveWinners = {};
+    let liveAdminPass = "9510992643vk"; 
+    let liveAdminWallet = 0;
+
+    const DEFAULT_MOTIVATIONS = [
+        "Apna Time Aayega Nahi, Hum Khud Layenge! Booyah Only!",
+        "4v4 ho ya Solo, maidan me sirf tumhara naam gunjna chahiye!",
+        "Asli pro wahi hai jo aakhri round tak give up na kare!",
+        "One-tap aur headshot ka jalwa dikhane ka waqt aa gaya hai!",
+        "Khel aisa khelo ki opponent bhi tumhara fan ban jaye!"
+    ];
+
+    database.ref('users').on('value', (snapshot) => { 
+        liveUsersDb = snapshot.val() || {}; 
+        checkLoginState(); 
+        populateGiftDropdown();
+        if(localStorage.getItem('loggedInMobile')) updateProfileScreenData();
+        if(localStorage.getItem('isAdminStatus') === 'true') {
+            renderAdminPayments();
+            loadAdminPlayersList();
+        }
+    });
+
+    database.ref('admin/wallet').on('value', (snapshot) => {
+        liveAdminWallet = snapshot.val() || 0;
+        document.getElementById('adminVaultBal').innerText = liveAdminWallet;
+        if(localStorage.getItem('isAdminStatus') === 'true') {
+            document.getElementById('displayBalance').innerText = liveAdminWallet;
+            document.getElementById('wallBalance').innerText = liveAdminWallet;
+        }
+    });
+
+    database.ref('transactions').on('value', (snapshot) => { 
+        liveTxs = snapshot.val() || {}; 
+        renderUserTxList();
+        if(localStorage.getItem('loggedInMobile')) updateMatchesCount();
+        if(localStorage.getItem('isAdminStatus') === 'true') renderAdminPayments();
+    });
+
+    database.ref('tournaments').on('value', (snapshot) => { 
+        liveTournaments = snapshot.val() || {}; 
+        renderTournamentsList();
+        renderHomeTournamentsPreview();
+        renderAdminMatchesList();
+    });
+
+    database.ref('winners').on('value', (snapshot) => {
+        liveWinners = snapshot.val() || {};
+        renderWinnersArchive();
+    });
+
+    database.ref('admin/password').on('value', (snapshot) => {
+        if(snapshot.val()) liveAdminPass = snapshot.val();
+    });
+
+    function openAdminPlayers() { loadAdminPlayersList(); openScreen('adminPlayersScreen'); }
+    function openAdminPayments() { renderAdminPayments(); openScreen('adminPaymentsScreen'); }
+
+    function changeAdminPass() {
+        let newPass = document.getElementById('newAdminPass').value.trim();
+        if(newPass.length >= 6) {
+            database.ref('admin/password').set(newPass);
+            alert("✅ Admin Password Updated Successfully!");
+            document.getElementById('newAdminPass').value = "";
+            openScreen('adminDashboardScreen');
+        } else {
+            alert("⚠️ Password must be at least 6 characters long!");
+        }
+    }
+
+    function getMyBalance() {
+        let isAdmin = localStorage.getItem('isAdminStatus');
+        if(isAdmin === 'true') return liveAdminWallet;
+        let mob = localStorage.getItem('loggedInMobile');
+        if(!mob) return 0;
+        return liveUsersDb[mob] ? (liveUsersDb[mob].balance || 0) : 0;
+    }
+
+    function updateMyBalance(newBal, mobStr) {
+        let mob = mobStr || localStorage.getItem('loggedInMobile');
+        if(!mob) return;
+        database.ref('users/' + mob + '/balance').set(Math.max(0, parseInt(newBal))); 
+    }
+
+    function updateProfileScreenData() {
+        let mob = localStorage.getItem('loggedInMobile');
+        if(!mob || !liveUsersDb[mob]) return;
+
+        let u = liveUsersDb[mob];
+        document.getElementById('profName').innerText = sanitize(u.name);
+        document.getElementById('profMobile').innerText = "+91 " + sanitize(mob);
+        document.getElementById('profBalance').innerText = u.balance || 0;
+
+        let avatar = u.avatar || "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+        document.getElementById('profAvatarImg').src = avatar;
+        document.getElementById('navAvatarImg').src = avatar;
+
+        updateMatchesCount();
+    }
+
+    function updateMatchesCount() {
+        let mob = localStorage.getItem('loggedInMobile');
+        if(!mob) return;
+        let count = 0;
+        for(let id in liveTxs) {
+            let tx = liveTxs[id];
+            if(tx.mobile === mob && tx.type === 'fee') count++;
+        }
+        let countElem = document.getElementById('profMatchesPlayed');
+        if(countElem) countElem.innerText = count;
+    }
+
+    function compressImage(file, maxWidth, maxHeight, quality, callback) {
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(event) {
+            let img = new Image();
+            img.src = event.target.result;
+            img.onload = function() {
+                let canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                let ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                let compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                callback(compressedBase64);
+            };
+        };
+    }
+
+    function handleAvatarUpload(event) {
+        let file = event.target.files[0];
+        if(!file) return;
+
+        compressImage(file, 240, 240, 0.82, function(base64) {
+            let mob = localStorage.getItem('loggedInMobile');
+            if(mob) {
+                database.ref('users/' + mob + '/avatar').set(base64);
+                document.getElementById('profAvatarImg').src = base64;
+                document.getElementById('navAvatarImg').src = base64;
+                alert("🎉 Profile Photo updated successfully!");
+            }
+        });
+    }
+
+    function previewAndProcessBanner(event) {
+        let file = event.target.files[0];
+        if(!file) return;
+
+        compressImage(file, 720, 400, 0.78, function(base64) {
+            document.getElementById('adminBannerBase64').value = base64;
+            document.getElementById('bannerPreviewImg').src = base64;
+            document.getElementById('bannerPreviewBox').style.display = 'block';
+        });
+    }
+
+    function changeUserPassword() {
+        let mob = localStorage.getItem('loggedInMobile');
+        let newPass = document.getElementById('userNewPassword').value.trim();
+
+        if(!mob) { alert("Please login first!"); return; }
+        if(newPass.length < 4) { alert("⚠️ Password must be at least 4 characters!"); return; }
+
+        database.ref('users/' + mob + '/pass').set(newPass);
+        alert("✅ Your password has been changed successfully!");
+        document.getElementById('userNewPassword').value = '';
+    }
+
+    function renderUserTxList() {
+        let myMob = localStorage.getItem('loggedInMobile');
+        let isAdmin = localStorage.getItem('isAdminStatus') === 'true';
+        let html = '';
+
+        let txKeys = Object.keys(liveTxs).reverse();
+        let count = 0;
+
+        for(let key of txKeys) {
+            let tx = liveTxs[key];
+            if(!isAdmin && tx.mobile !== myMob) continue;
+
+            let isDeposit = (tx.type === 'deposit' || tx.type === 'gift' || tx.type === 'prize');
+            let sign = isDeposit ? '+ ' : '- ';
+            let colorClass = isDeposit ? 'tx-green' : 'tx-red';
+            let uName = tx.userName || (liveUsersDb[tx.mobile] ? liveUsersDb[tx.mobile].name : 'Player');
+
+            html += `
+            <div class="player-item">
+                <div>
+                    <div style="font-weight:700; color:#fff;">${sanitize(uName)} <span style="font-size:0.75rem; color:#8c9ba5;">(${sanitize(tx.type).toUpperCase()})</span></div>
+                    <div style="font-size:0.75rem; color:#aaa;">${sanitize(tx.detail)}</div>
+                    <div style="font-size:0.7rem; color:${tx.status === 'approved' ? '#4caf50' : (tx.status === 'rejected' ? '#f44336' : '#ff9800')};">
+                        Status: ${sanitize(tx.status).toUpperCase()}
+                    </div>
+                </div>
+                <div class="${colorClass}">
+                    ${sign}₹${tx.amount}
+                </div>
+            </div>`;
+            count++;
+        }
+
+        if(count === 0) {
+            html = "<p style='color:#aaa; text-align:center; padding:10px;'>No transactions yet.</p>";
+        }
+
+        let uBox = document.getElementById('userTxList');
+        if(uBox) uBox.innerHTML = html;
+        let wBox = document.getElementById('walletTxList');
+        if(wBox) wBox.innerHTML = html;
+    }
+
+    function populateGiftDropdown() {
+        let sel = document.getElementById('giftUserSelect');
+        if(!sel) return;
+        sel.innerHTML = '<option value="">-- Choose User by Mobile / Name --</option>';
+        for(let mob in liveUsersDb) {
+            let u = liveUsersDb[mob];
+            let opt = document.createElement('option');
+            opt.value = mob;
+            opt.innerText = `${u.name} (${mob}) - Bal: ₹${u.balance || 0}`;
+            sel.appendChild(opt);
+        }
+    }
+
+    function sendMoneyToUser() {
+        let targetMob = document.getElementById('giftUserSelect').value;
+        let amt = parseInt(document.getElementById('giftAmount').value);
+        let remark = document.getElementById('giftRemark').value.trim() || 'Admin Gift / Bonus';
+
+        if(!targetMob) { alert("⚠️ Please select a user first!"); return; }
+        if(isNaN(amt) || amt <= 0) { alert("⚠️ Please enter a valid amount!"); return; }
+
+        let targetUser = liveUsersDb[targetMob];
+        if(!targetUser) { alert("⚠️ User does not exist!"); return; }
+
+        let curBal = targetUser.balance || 0;
+        let updatedBal = curBal + amt;
+
+        updateMyBalance(updatedBal, targetMob);
+
+        let txId = Date.now().toString();
+        database.ref('transactions/' + txId).set({
+            id: txId,
+            type: 'gift',
+            mobile: targetMob,
+            userName: targetUser.name,
+            amount: amt,
+            detail: '🎁 ' + remark,
+            status: 'approved'
+        });
+
+        alert(`🎉 Successfully sent ₹${amt} to ${targetUser.name}!`);
+        document.getElementById('giftAmount').value = '';
+        document.getElementById('giftRemark').value = '';
+        openScreen('adminDashboardScreen');
+    }
+
+    function renderAdminPayments() {
+        let depHtml = ''; let withHtml = '';
+        for(let txId in liveTxs) {
+            let tx = liveTxs[txId];
+            if(tx.status !== 'pending') continue;
+            let uName = tx.userName || (liveUsersDb[tx.mobile] ? liveUsersDb[tx.mobile].name : 'Unknown Player');
+            
+            let box = `<div class="player-item">
+                <div>
+                    <b style="color:#03a9f4;">${sanitize(uName)}</b> <span style="color:#aaa;">(${sanitize(tx.mobile)})</span><br>
+                    Detail/UPI: <span style="color:#fff;">${sanitize(tx.detail)}</span>
+                    <div style="margin-top:6px;">
+                        <button class="approve-btn" onclick="processTx('${txId}', 'approve')">Approve</button>
+                        <button class="reject-btn" onclick="processTx('${txId}', 'reject')">Reject</button>
+                    </div>
+                </div>
+                <div class="${tx.type === 'deposit' ? 'tx-green' : 'tx-red'}">
+                    ${tx.type === 'deposit' ? '+' : '-'}₹${tx.amount}
+                </div>
+            </div>`;
+            if(tx.type === 'deposit') depHtml += box;
+            else if(tx.type === 'withdraw') withHtml += box;
+        }
+        document.getElementById('adminDepList').innerHTML = depHtml || "<p style='color:#aaa; text-align:center;'>No pending deposits.</p>";
+        document.getElementById('adminWithList').innerHTML = withHtml || "<p style='color:#aaa; text-align:center;'>No pending withdrawals.</p>";
+    }
+
+    function processTx(txId, action) {
+        let tx = liveTxs[txId];
+        if(!tx) return;
+        
+        let userBal = liveUsersDb[tx.mobile] ? (liveUsersDb[tx.mobile].balance || 0) : 0;
+        
+        if(tx.type === 'deposit' && action === 'approve') {
+            updateMyBalance(userBal + tx.amount, tx.mobile);
+            let newAdminBal = (liveAdminWallet || 0) + tx.amount;
+            database.ref('admin/wallet').set(newAdminBal);
+        } else if(tx.type === 'withdraw' && action === 'reject') {
+            updateMyBalance(userBal + tx.amount, tx.mobile); 
+        }
+        
+        database.ref('transactions/' + txId + '/status').set(action); 
+        alert(`Transaction ${action}d successfully!`);
+    }
+
+    function signupUser() {
+        let name = document.getElementById('signupName').value.trim();
+        let mobile = document.getElementById('signupMobile').value.trim();
+        let pass = document.getElementById('signupPass').value.trim();
+
+        if(!name || !mobile || !pass) { alert("⚠️ Please fill all details!"); return; }
+        if(!/^\d{10}$/.test(mobile)) { alert("⚠️ Please enter a valid 10-digit mobile number!"); return; }
+
+        if(liveUsersDb[mobile]) {
+            alert("⚠️ Account already exists with this number! Please login."); 
+            openScreen('loginScreen');
+            return;
+        }
+
+        database.ref('users/' + mobile).set({ 
+            name: name, 
+            pass: pass, 
+            balance: 0,
+            avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
+            createdAt: Date.now()
+        }, (err) => {
+            if(!err) {
+                alert("🎉 Account created successfully! Please login with your password.");
+                document.getElementById('signupName').value = ""; 
+                document.getElementById('signupMobile').value = ""; 
+                document.getElementById('signupPass').value = "";
+                openScreen('loginScreen');
+            } else {
+                alert("❌ Registration failed, check your network!");
+            }
+        });
+    }
+
+    function loginUser() {
+        let mobileInput = document.getElementById('loginMobile').value.trim();
+        let passInput = document.getElementById('loginPass').value.trim();
+        if (!mobileInput || !passInput) { alert("⚠️ Enter mobile and password!"); return; }
+
+        if(mobileInput === "7359867369" && passInput === liveAdminPass) {
+            localStorage.setItem('loggedInUser', "Admin"); 
+            localStorage.setItem('isAdminStatus', 'true'); 
+            localStorage.removeItem('loggedInMobile');
+            alert("👑 Welcome Commander Admin!");
+            document.getElementById('loginMobile').value = ""; 
+            document.getElementById('loginPass').value = "";
+            checkLoginState(); 
+            openScreen('adminDashboardScreen'); 
+            return;
+        }
+
+        if(liveUsersDb[mobileInput] && liveUsersDb[mobileInput].pass === passInput) {
+            localStorage.setItem('loggedInUser', liveUsersDb[mobileInput].name); 
+            localStorage.setItem('loggedInMobile', mobileInput); 
+            localStorage.setItem('isAdminStatus', 'false');
+            alert("🎮 Login successful! Welcome back.");
+            document.getElementById('loginMobile').value = ""; 
+            document.getElementById('loginPass').value = "";
+            checkLoginState(); 
+            updateProfileScreenData();
+            openScreen('homeScreen');
+        } else {
+            alert("❌ Invalid credentials! Check your phone number & password.");
+        }
+    }
+
+    function confirmLogout() {
+        if(confirm("Are you sure you want to logout from your account?")) {
+            localStorage.removeItem('loggedInUser'); 
+            localStorage.removeItem('loggedInMobile'); 
+            localStorage.removeItem('isAdminStatus'); 
+            document.getElementById('navAvatarImg').src = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+            checkLoginState(); 
+            alert("👋 You have been logged out."); 
+            openScreen('signupScreen');
+        }
+    }
+
+    function checkLoginState() {
+        let currentUser = localStorage.getItem('loggedInUser');
+        let isAdmin = localStorage.getItem('isAdminStatus');
+        let bal = getMyBalance();
+
+        document.getElementById('displayBalance').innerText = bal;
+        document.getElementById('wallBalance').innerText = bal;
+
+        let welc = document.getElementById('welcomeMsg');
+        let adminCard = document.getElementById('adminCardShortcut');
+
+        if(isAdmin === 'true') {
+            welc.innerText = "Welcome, Commander (Admin)";
+            adminCard.style.display = 'block';
+        } else if(currentUser) {
+            welc.innerText = "Welcome, " + currentUser;
+            adminCard.style.display = 'none';
+        } else {
+            welc.innerText = "Welcome to Players India";
+            adminCard.style.display = 'none';
+        }
+    }
+
+    function loadAdminPlayersList() {
+        let html = ""; let count = 0;
+        for(let mob in liveUsersDb) {
+            let u = liveUsersDb[mob];
+            html += `<div class="player-item">
+                        <div>
+                            <b style="color:#03a9f4;">👤 ${sanitize(u.name)}</b> <br>
+                            <span style="font-size:0.75rem; color:#aaa;">Mob: ${sanitize(mob)}</span>
+                        </div>
+                        <div style="color:#4caf50; font-weight:bold;">₹${u.balance || 0}</div>
+                     </div>`;
+            count++;
+        }
+        document.getElementById('adminPlayersList').innerHTML = html || "<p style='color:#aaa; text-align:center;'>No players yet.</p>";
+        document.getElementById('adminTotalPlayers').innerText = count;
+    }
+
+    function publishNewTournament() {
+        let motivation = document.getElementById('adminMotivation').value.trim() || DEFAULT_MOTIVATIONS[Math.floor(Math.random() * DEFAULT_MOTIVATIONS.length)];
+        let title = document.getElementById('adminMatchTitle').value.trim() || "Daily Championship";
+        let date = document.getElementById('adminDate').value;
+        let time = document.getElementById('adminTime').value;
+        let type = document.getElementById('adminType').value;
+        let fee = document.getElementById('adminFee').value || "0";
+        let prize1 = parseInt(document.getElementById('adminPrize1').value) || 0;
+        let prize2 = parseInt(document.getElementById('adminPrize2').value) || 0;
+        let prize3 = parseInt(document.getElementById('adminPrize3').value) || 0;
+        let prize4 = parseInt(document.getElementById('adminPrize4').value) || 0;
+        let prize5 = parseInt(document.getElementById('adminPrize5').value) || 0;
+        let room = document.getElementById('adminRoom').value.trim();
+        let pass = document.getElementById('adminPass').value.trim();
+        let banner = document.getElementById('adminBannerBase64').value || "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80";
+
+        if(!date || !time) { alert("⚠️ Please provide tournament date and time!"); return; }
+        if(prize1 <= 0) { alert("⚠️ Please set a valid 1st Prize amount in ₹!"); return; }
+
+        let matchId = 'MATCH_' + Date.now();
+        let matchData = {
+            id: matchId,
+            motivation: motivation,
+            title: title,
+            date: date,
+            time: time,
+            type: type,
+            fee: fee,
+            banner: banner,
+            prize1: prize1,
+            prize2: prize2,
+            prize3: prize3,
+            prize4: prize4,
+            prize5: prize5,
+            room: room,
+            pass: pass,
+            status: 'active',
+            players: {}
+        };
+
+        database.ref('tournaments/' + matchId).set(matchData);
+        alert("✅ Tournament published successfully!");
+        
+        document.getElementById('adminMotivation').value = '';
+        document.getElementById('adminMatchTitle').value = '';
+        document.getElementById('adminDate').value = '';
+        document.getElementById('adminTime').value = '';
+        document.getElementById('adminFee').value = '';
+        document.getElementById('adminPrize1').value = '';
+        document.getElementById('adminPrize2').value = '';
+        document.getElementById('adminPrize3').value = '';
+        document.getElementById('adminPrize4').value = '';
+        document.getElementById('adminPrize5').value = '';
+        document.getElementById('adminRoom').value = '';
+        document.getElementById('adminPass').value = '';
+        document.getElementById('adminBannerBase64').value = '';
+        document.getElementById('bannerPreviewBox').style.display = 'none';
+
+        openScreen('adminDashboardScreen');
+    }
+
+    function isClashSquad(typeStr) {
+        return typeStr && typeStr.toUpperCase().includes('CLASH SQUAD');
+    }
+
+    function needsTeamName(typeStr) {
+        if(!typeStr) return false;
+        let u = typeStr.toUpperCase();
+        return u.includes('4V4') || u.includes('SQUAD');
+    }
+
+    function renderTournamentsList() {
+        let container = document.getElementById('tournamentListContainer');
+        if(!container) return;
+
+        let activeCount = 0;
+        let html = "";
+        let myMob = localStorage.getItem('loggedInMobile');
+
+        for(let id in liveTournaments) {
+            let t = liveTournaments[id];
+            if(t.status !== 'active') continue;
+
+            let isCS = isClashSquad(t.type);
+
+            // Apply Filter
+            if(currentMatchFilter === 'CS' && !isCS) continue;
+            if(currentMatchFilter === 'BR' && isCS) continue;
+
+            activeCount++;
+
+            let jCount = t.players ? Object.keys(t.players).length : 0;
+            let isJoined = (myMob && t.players && t.players[myMob]);
+            let showTeamInput = needsTeamName(t.type);
+
+            html += `
+            <div class="tourney-card" style="${isCS ? 'border-color:#00bcd4;' : ''}">
+                <div class="tourney-banner" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.9)), url('${t.banner}');">
+                    <span class="tourney-badge ${isCS ? 'cs-badge' : ''}">${sanitize(t.type)}</span>
+                </div>
+                <div class="tourney-body">
+                    <div class="motivation-line">🔥 "${sanitize(t.motivation || 'Jeet ke aana hai!')}"</div>
+                    <h3 class="tourney-title">${sanitize(t.title)}</h3>
+                    
+                    <div class="timing-alert-box">
+                        <i class="fa-solid fa-clock"></i> Room ID & Password match start hone se theek 10 minute pehle yahan update hoga.
+                    </div>
+
+                    <div class="tourney-meta">
+                        <span>📅 ${sanitize(t.date)}</span>
+                        <span>⏰ ${sanitize(t.time)}</span>
+                        <span>🎟️ Fee: <b>₹${t.fee}</b></span>
+                        <span>👥 Joined: <b style="color:#00bcd4;">${jCount}</b></span>
+                    </div>
+
+                    <div class="prize-box">
+                        <div class="prize-item-row">
+                            <span>🥇 ${isCS ? 'Winner Team Prize:' : '1st Rank:'}</span>
+                            <b style="color:#ffeb3b;">₹${t.prize1}</b>
+                        </div>
+                        ${t.prize2 > 0 ? `<div class="prize-item-row"><span>🥈 2nd Rank:</span><b style="color:#ffeb3b;">₹${t.prize2}</b></div>` : ''}
+                        ${t.prize3 > 0 ? `<div class="prize-item-row"><span>🥉 3rd Rank:</span><b style="color:#ffeb3b;">₹${t.prize3}</b></div>` : ''}
+                        ${t.prize4 > 0 ? `<div class="prize-item-row"><span>🏅 4th Rank:</span><b style="color:#ffeb3b;">₹${t.prize4}</b></div>` : ''}
+                        ${t.prize5 > 0 ? `<div class="prize-item-row"><span>🏅 5th Rank:</span><b style="color:#ffeb3b;">₹${t.prize5}</b></div>` : ''}
+                    </div>
+
+                    ${isJoined ? `
+                        <div class="room-details">
+                            <p style="font-weight:bold; color:#ffeb3b;">✅ Registered! Ready for Battle</p>
+                            ${t.players[myMob].teamName ? `<p style="font-size:0.8rem; color:#fff;">🛡️ Team: <b>${sanitize(t.players[myMob].teamName)}</b></p>` : ''}
+                            <p style="font-size:0.85rem; margin-top:4px;">
+                                🎮 Room ID: <b>${sanitize(t.room) || 'Waiting (10m before)'}</b> | 
+                                🔑 Pass: <b>${sanitize(t.pass) || 'Waiting'}</b>
+                            </p>
+                        </div>
+                    ` : `
+                        <div style="margin-top:10px;">
+                            ${showTeamInput ? `<input type="text" id="team_${t.id}" placeholder="Enter Your Squad / Team Name" style="margin-bottom:4px;">` : ''}
+                            <input type="text" id="uid_${t.id}" placeholder="Enter Free Fire UID (Leader UID)" style="margin-bottom:6px;">
+                            <button class="action-btn" style="${isCS ? 'background: linear-gradient(90deg, #00e5ff, #2979ff); color:#fff;' : ''}" onclick="confirmJoinMatch('${t.id}')">
+                                ${isCS ? '⚔️ Join Clash Squad' : 'Join Tournament'}
+                            </button>
+                        </div>
+                    `}
+                </div>
+            </div>`;
+        }
+
+        if(activeCount === 0) {
+            let emptyLabel = currentMatchFilter === 'CS' ? 'Clash Squad' : (currentMatchFilter === 'BR' ? 'Battle Royale' : 'active');
+            html = `<div style="text-align:center; padding:30px; color:#ef5350;">
+                        <i class="fa-solid fa-gamepad" style="font-size:2.5rem; margin-bottom:10px;"></i>
+                        <p>No ${emptyLabel} tournaments scheduled right now.</p>
+                    </div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    function renderHomeTournamentsPreview() {
+        let box = document.getElementById('homeMatchesPreview');
+        if(!box) return;
+
+        let html = '';
+        let count = 0;
+        for(let id in liveTournaments) {
+            let t = liveTournaments[id];
+            if(t.status !== 'active') continue;
+            count++;
+            let isCS = isClashSquad(t.type);
+            html += `
+            <div class="tourney-card" onclick="openScreen('matchesScreen')" style="cursor:pointer; margin-bottom:12px;">
+                <div class="tourney-banner" style="height:120px; background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.9)), url('${t.banner}');">
+                    <span class="tourney-badge ${isCS ? 'cs-badge' : ''}">${sanitize(t.type)}</span>
+                </div>
+                <div style="padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <b style="color:#fff; font-size:0.95rem;">${sanitize(t.title)}</b>
+                        <div style="font-size:0.75rem; color:#aaa;">${sanitize(t.date)} @ ${sanitize(t.time)} | Entry: ₹${t.fee}</div>
+                    </div>
+                    <span style="color:#ff9800; font-size:0.8rem; font-weight:bold;">Join &rarr;</span>
+                </div>
+            </div>`;
+            if(count >= 3) break;
+        }
+
+        if(count === 0) {
+            html = `<p style="font-size:0.8rem; color:#aaa; text-align:center; padding:15px; background:#1a2234; border-radius:8px;">
+                        No matches scheduled right now. Tap bottom 'Matches' for updates.
+                    </p>`;
+        }
+        box.innerHTML = html;
+    }
+
+    function confirmJoinMatch(matchId) {
+        let t = liveTournaments[matchId];
+        if(!t) return;
+
+        let fee = parseInt(t.fee || 0);
+        let uidElem = document.getElementById('uid_' + matchId);
+        let uid = uidElem ? uidElem.value.trim() : '';
+
+        let teamElem = document.getElementById('team_' + matchId);
+        let teamName = teamElem ? teamElem.value.trim() : '';
+
+        let myBal = getMyBalance();
+        let myMob = localStorage.getItem('loggedInMobile');
+        let myName = localStorage.getItem('loggedInUser');
+
+        if(!myName) { alert("⚠️ Please login first!"); openScreen('signupScreen'); return; }
+        if(needsTeamName(t.type) && !teamName) { alert("⚠️ Please enter your Team / Squad Name!"); return; }
+        if(!uid) { alert("⚠️ Please enter your Free Fire UID!"); return; }
+
+        if(t.players && t.players[myMob]) {
+            alert("⚠️ You have already joined this match!"); 
+            return;
+        }
+
+        if(fee > 0 && myBal < fee) {
+            alert("❌ Insufficient Wallet Balance! Please add money.");
+            openScreen('walletScreen');
+            return;
+        }
+
+        let confirmMsg = `Kya aap "${t.title}" (${t.type}) match join karna chahte hain?\nEntry Fee: ₹${fee} aapke wallet se deduct hoga.`;
+        if(!confirm(confirmMsg)) {
+            return;
+        }
+
+        if(fee > 0) {
+            updateMyBalance(myBal - fee);
+            let txId = Date.now().toString();
+            database.ref('transactions/' + txId).set({
+                id: txId,
+                type: 'fee',
+                mobile: myMob,
+                userName: myName,
+                amount: fee,
+                detail: `Entry Fee: ${t.title} (UID: ${uid}${teamName ? ', Team: ' + teamName : ''})`,
+                status: 'approved'
+            });
+        }
+
+        database.ref(`tournaments/${matchId}/players/${myMob}`).set({
+            name: myName,
+            uid: uid,
+            teamName: teamName,
+            joinedAt: Date.now()
+        });
+
+        alert("🔥 Joined successfully! Room ID will appear here 10 mins before match.");
+        renderTournamentsList();
+    }
+
+    // ADMIN: MANAGE WINNERS & AUTO PAYOUT
+    function renderAdminMatchesList() {
+        let box = document.getElementById('adminMatchesList');
+        if(!box) return;
+
+        let html = '';
+        let activeFound = false;
+
+        for(let id in liveTournaments) {
+            let t = liveTournaments[id];
+            if(t.status !== 'active') continue;
+            activeFound = true;
+
+            let pCount = t.players ? Object.keys(t.players).length : 0;
+            let playerOptions = '<option value="">-- Choose Registered Player / Team --</option>';
+
+            if(t.players) {
+                for(let mob in t.players) {
+                    let p = t.players[mob];
+                    let teamLabel = p.teamName ? ` [Team: ${sanitize(p.teamName)}]` : '';
+                    playerOptions += `<option value="${mob}">${sanitize(p.name)}${teamLabel} (UID: ${sanitize(p.uid)})</option>`;
+                }
+            }
+
+            html += `
+            <div style="background:#0e1422; border:1px solid #364461; border-radius:10px; padding:12px; margin-bottom:16px;">
+                <b style="color:#00bcd4; font-size:1rem;">🎮 ${sanitize(t.title)}</b>
+                <span style="display:inline-block; background:#ff9800; color:#000; font-size:0.65rem; font-weight:bold; padding:2px 6px; border-radius:4px; margin-left:6px;">${sanitize(t.type)}</span>
+                <p style="font-size:0.75rem; color:#aaa; margin:3px 0;">Date: ${sanitize(t.date)} ${sanitize(t.time)} | Joined: ${pCount}</p>
+                
+                <div style="margin-top:8px;">
+                    <label style="font-size:0.75rem; color:#ffeb3b;">Update Room ID & Password (10 Min Pehle):</label>
+                    <input type="text" id="rm_id_${t.id}" value="${sanitize(t.room || '')}" placeholder="Room ID" style="padding:8px; margin:4px 0;">
+                    <input type="text" id="rm_ps_${t.id}" value="${sanitize(t.pass || '')}" placeholder="Room Password" style="padding:8px; margin:4px 0;">
+                    <button class="action-btn" style="padding:6px; background:#00bcd4; margin-top:2px;" onclick="updateRoomCredentials('${t.id}')">Update Room ID/Pass</button>
+                </div>
+
+                <div style="margin-top:12px; border-top:1px dashed #28334b; padding-top:8px;">
+                    <label style="font-size:0.8rem; color:#4caf50; font-weight:bold;">🏆 Declare Winners (Auto Wallet Pay):</label>
+                    
+                    <div style="margin-top:6px;">
+                        <span style="font-size:0.75rem; color:#ffeb3b;">🥇 1st Rank / Winner (Prize: ₹${t.prize1}):</span>
+                        <select id="win1_${t.id}" style="padding:6px; margin:2px 0;">${playerOptions}</select>
+                    </div>
+
+                    ${t.prize2 > 0 ? `
+                    <div style="margin-top:4px;">
+                        <span style="font-size:0.75rem; color:#ffeb3b;">🥈 2nd Rank (Prize: ₹${t.prize2}):</span>
+                        <select id="win2_${t.id}" style="padding:6px; margin:2px 0;">${playerOptions}</select>
+                    </div>` : ''}
+
+                    ${t.prize3 > 0 ? `
+                    <div style="margin-top:4px;">
+                        <span style="font-size:0.75rem; color:#ffeb3b;">🥉 3rd Rank (Prize: ₹${t.prize3}):</span>
+                        <select id="win3_${t.id}" style="padding:6px; margin:2px 0;">${playerOptions}</select>
+                    </div>` : ''}
+
+                    ${t.prize4 > 0 ? `
+                    <div style="margin-top:4px;">
+                        <span style="font-size:0.75rem; color:#ffeb3b;">🏅 4th Rank (Prize: ₹${t.prize4}):</span>
+                        <select id="win4_${t.id}" style="padding:6px; margin:2px 0;">${playerOptions}</select>
+                    </div>` : ''}
+
+                    ${t.prize5 > 0 ? `
+                    <div style="margin-top:4px;">
+                        <span style="font-size:0.75rem; color:#ffeb3b;">🏅 5th Rank (Prize: ₹${t.prize5}):</span>
+                        <select id="win5_${t.id}" style="padding:6px; margin:2px 0;">${playerOptions}</select>
+                    </div>` : ''}
+
+                    <button class="action-btn" style="background:#4caf50; color:#fff; margin-top:8px;" onclick="declareTop5Winners('${t.id}')">
+                        Confirm & Pay Prizes to Winners
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        if(!activeFound) {
+            html = "<p style='color:#aaa; text-align:center;'>No active tournaments to manage.</p>";
+        }
+
+        box.innerHTML = html;
+    }
+
+    function updateRoomCredentials(matchId) {
+        let room = document.getElementById('rm_id_' + matchId).value.trim();
+        let pass = document.getElementById('rm_ps_' + matchId).value.trim();
+
+        database.ref(`tournaments/${matchId}/room`).set(room);
+        database.ref(`tournaments/${matchId}/pass`).set(pass);
+        alert("✅ Room details updated and visible to registered players!");
+    }
+
+    function declareTop5Winners(matchId) {
+        let t = liveTournaments[matchId];
+        if(!t) return;
+
+        let ranks = [
+            { rank: '1st', elem: 'win1_' + matchId, prize: parseInt(t.prize1 || 0) },
+            { rank: '2nd', elem: 'win2_' + matchId, prize: parseInt(t.prize2 || 0) },
+            { rank: '3rd', elem: 'win3_' + matchId, prize: parseInt(t.prize3 || 0) },
+            { rank: '4th', elem: 'win4_' + matchId, prize: parseInt(t.prize4 || 0) },
+            { rank: '5th', elem: 'win5_' + matchId, prize: parseInt(t.prize5 || 0) }
+        ];
+
+        let declaredList = [];
+        let r1Mob = document.getElementById('win1_' + matchId) ? document.getElementById('win1_' + matchId).value : '';
+        if(!r1Mob) {
+            alert("⚠️ 1st Rank winner select karna compulsory hai!");
+            return;
+        }
+
+        if(!confirm(`Kya aap "${t.title}" ke winners declare karke prize money bhejna chahte hain?`)) {
+            return;
+        }
+
+        for(let r of ranks) {
+            let el = document.getElementById(r.elem);
+            if(!el) continue;
+            let mob = el.value;
+            if(mob && liveUsersDb[mob]) {
+                let uName = liveUsersDb[mob].name;
+                let teamN = (t.players && t.players[mob] && t.players[mob].teamName) ? ` (${t.players[mob].teamName})` : '';
+                let prize = r.prize;
+
+                if(prize > 0) {
+                    let curBal = liveUsersDb[mob].balance || 0;
+                    updateMyBalance(curBal + prize, mob);
+
+                    let txId = Date.now().toString() + '_' + r.rank;
+                    database.ref('transactions/' + txId).set({
+                        id: txId,
+                        type: 'prize',
+                        mobile: mob,
+                        userName: uName,
+                        amount: prize,
+                        detail: `🏆 ${r.rank} Prize: ${t.title}`,
+                        status: 'approved'
+                    });
+                }
+
+                declaredList.push({
+                    rank: r.rank,
+                    name: uName + teamN,
+                    mobile: mob,
+                    prize: '₹' + prize
+                });
+            }
+        }
+
+        let winArchiveId = 'WIN_' + Date.now();
+        database.ref('winners/' + winArchiveId).set({
+            matchId: matchId,
+            matchTitle: t.title,
+            matchType: t.type,
+            banner: t.banner,
+            winners: declaredList,
+            date: t.date,
+            announcedAt: Date.now()
+        });
+
+        database.ref('tournaments/' + matchId + '/status').set('completed');
+
+        alert("🎉 Winners successfully declared! Prizes transferred automatically.");
+        openScreen('winnersScreen');
+    }
+
+    function renderWinnersArchive() {
+        let box = document.getElementById('winnersListContainer');
+        if(!box) return;
+
+        let winKeys = Object.keys(liveWinners).reverse();
+        if(winKeys.length === 0) {
+            box.innerHTML = `
+            <div style="text-align:center; padding:30px; color:#aaa;">
+                <i class="fa-solid fa-trophy" style="font-size:2.5rem; color:#ffb300; margin-bottom:10px;"></i>
+                <p>No past tournament winners published yet.</p>
+            </div>`;
+            return;
+        }
+
+        let html = '';
+        for(let key of winKeys) {
+            let w = liveWinners[key];
+            let winnersHtml = '';
+
+            if(w.winners && Array.isArray(w.winners)) {
+                for(let item of w.winners) {
+                    winnersHtml += `
+                    <div class="prize-item-row">
+                        <span>🎖️ Rank ${sanitize(item.rank)}: <b>${sanitize(item.name)}</b></span>
+                        <b style="color:#00e676;">${sanitize(item.prize)}</b>
+                    </div>`;
+                }
+            } else if(w.winnerName) {
+                winnersHtml = `
+                <div class="prize-item-row">
+                    <span>👑 Champion: <b>${sanitize(w.winnerName)}</b></span>
+                    <b style="color:#00e676;">${sanitize(w.prize)}</b>
+                </div>`;
+            }
+
+            html += `
+            <div class="winner-card">
+                <img src="${w.banner}" class="winner-poster-img" alt="Poster">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:0.75rem; background:#ff9800; color:#000; padding:2px 8px; border-radius:4px; font-weight:bold;">${sanitize(w.matchType || 'TOURNAMENT')}</span>
+                    <span style="font-size:0.75rem; color:#8c9ba5;">${sanitize(w.date || '')}</span>
+                </div>
+                <h3 style="color:#fff; font-size:1.1rem; margin-bottom:8px;">${sanitize(w.matchTitle)}</h3>
+                <div style="background:#0d1424; border-radius:8px; padding:10px;">
+                    ${winnersHtml}
+                </div>
+            </div>`;
+        }
+
+        box.innerHTML = html;
+    }
+
+    function confirmDeposit() {
+        let amount = parseInt(document.getElementById('depAmount').value);
+        let payUrl = document.getElementById('paymentUrl').value.trim();
+        let myMob = localStorage.getItem('loggedInMobile');
+        let myName = localStorage.getItem('loggedInUser');
+
+        if(!myMob) { alert("Please login first!"); openScreen('signupScreen'); return; }
+        if(isNaN(amount) || amount <= 0) { alert("⚠️ Enter a valid amount!"); return; } 
+        if(!payUrl) { alert("⚠️ Provide Screenshot URL or UTR Number!"); return; } 
+
+        if(!confirm(`Kya aap ₹${amount} ki deposit request bhejna chahte hain?\nUTR/URL: ${payUrl}`)) {
+            return;
+        }
+        
+        let txId = Date.now().toString();
+        database.ref('transactions/' + txId).set({
+            id: txId,
+            type: 'deposit',
+            mobile: myMob,
+            userName: myName,
+            amount: amount,
+            detail: payUrl,
+            status: 'pending'
+        });
+        
+        alert("⏳ Deposit request sent! Waiting for Admin verification.");
+        document.getElementById('depAmount').value = ''; 
+        document.getElementById('paymentUrl').value = '';
+    }
+
+    function confirmWithdraw() {
+        let amount = parseInt(document.getElementById('withAmount').value);
+        let userUpi = document.getElementById('withUpi').value.trim();
+        let myBal = getMyBalance();
+        let myMob = localStorage.getItem('loggedInMobile');
+        let myName = localStorage.getItem('loggedInUser');
+
+        if(!myMob) { alert("Please login first!"); openScreen('signupScreen'); return; }
+        if(isNaN(amount) || amount <= 0) { alert("⚠️ Enter a valid amount!"); return; } 
+        
+        if(amount < 200) {
+            alert("❌ Minimum withdrawal amount ₹200 hai! Isse kam withdraw nahi kiya ja sakta.");
+            return;
+        }
+
+        if(!userUpi) { alert("⚠️ Enter UPI ID!"); return; } 
+        if(amount > myBal) { alert("❌ Insufficient Wallet Balance! Your balance is ₹" + myBal); return; }
+
+        if(!confirm(`Withdrawal Confirmation:\nAmount: ₹${amount}\nUPI ID: ${userUpi}\nProceed karein?`)) {
+            return;
+        }
+
+        updateMyBalance(myBal - amount); 
+        let txId = Date.now().toString();
+        database.ref('transactions/' + txId).set({
+            id: txId,
+            type: 'withdraw',
+            mobile: myMob,
+            userName: myName,
+            amount: amount,
+            detail: userUpi,
+            status: 'pending'
+        });
+        alert("⏳ Withdrawal requested! Money will be sent to your UPI once verified.");
+        document.getElementById('withAmount').value = ''; 
+        document.getElementById('withUpi').value = '';
+    }
+
+    window.onload = function() { 
+        checkLoginState(); 
+        
+        let currentUser = localStorage.getItem('loggedInUser');
+        if(!currentUser) {
+            openScreen('signupScreen');
+        } else {
+            openScreen('homeScreen');
+        }
+
+        renderTournamentsList();
+        renderHomeTournamentsPreview();
+    };
+</script>
+</body>
+</html>
